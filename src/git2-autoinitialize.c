@@ -1,15 +1,21 @@
-//#include <git2/git2.h>
-//#import <CGit2/CGit2.h>
+extern void * dlsym(void * __handle, const char * __symbol);
+#define RTLD_DEFAULT    ((void *) -2)   /* Use default search algorithm. */
 
-extern int git_libgit2_init(void);
-extern int git_libgit2_shutdown(void);
+typedef int(*git_libgit2_init_f)(void);
+typedef int(*git_libgit2_shutdown_f)(void);
 
 __attribute__((constructor))
 static void Git2Initialize(void) {
-    git_libgit2_init();
+    git_libgit2_init_f const git_libgit2_init = dlsym(RTLD_DEFAULT, "git_libgit2_init");
+    if (git_libgit2_init) {
+        git_libgit2_init();
+    }
 }
 
 __attribute__((destructor))
 static void Git2Shutdown(void) {
-    git_libgit2_shutdown();
+    git_libgit2_shutdown_f const git_libgit2_shutdown = dlsym(RTLD_DEFAULT, "git_libgit2_shutdown");
+    if (git_libgit2_shutdown) {
+        git_libgit2_shutdown();
+    }
 }
